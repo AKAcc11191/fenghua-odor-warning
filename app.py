@@ -24,6 +24,49 @@ DATA_DIR = APP_DIR / "data"
 
 APP_VERSION = "v2.1 | 2026年6月"
 
+# ── 登录验证 ─────────────────────────────────────────────────────────────────
+_HARDCODED_PW = "fenghua2026"
+
+def _get_password():
+    try:
+        return st.secrets["password"]
+    except Exception:
+        return _HARDCODED_PW
+
+def check_password():
+    """简洁登录页面，验证通过后才显示主内容。"""
+    if st.session_state.get("authenticated"):
+        return True
+
+    st.markdown("""
+    <style>
+    .login-box { max-width: 420px; margin: 12vh auto; padding: 2.5rem;
+        background: white; border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center; }
+    .login-title { font-size: 1.5rem; font-weight: 700; color: #0C4A6E; margin-bottom: 0.3rem; }
+    .login-sub { font-size: 0.9rem; color: #64748B; margin-bottom: 1.5rem; }
+    </style>
+    """, unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.markdown("""
+        <div style="text-align:center; margin-top: 12vh;">
+            <div style="font-size:2.5rem;">🔒</div>
+            <div class="login-title">水源嗅味预警平台</div>
+            <div class="login-sub">产嗅藻荧光指纹预警与风险调控技术研究项目</div>
+        </div>
+        """, unsafe_allow_html=True)
+        pw = st.text_input("请输入访问密码", type="password", key="pw_input")
+        if st.button("登  录", use_container_width=True, type="primary"):
+            if pw == _get_password():
+                st.session_state["authenticated"] = True
+                st.rerun()
+            else:
+                st.error("密码错误，请重新输入")
+        st.caption("如需密码请联系项目负责人")
+    return False
+
 # ── 荧光特征名称 ─────────────────────────────────────────────────────────────
 ANALYTICAL_NAMES = [
     "FRI_1", "FRI_2", "FRI_3", "FRI_4", "FRI_5",
@@ -59,14 +102,20 @@ COLORS = {
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  PAGE CONFIG & CSS
+#  PAGE CONFIG
 # ══════════════════════════════════════════════════════════════════════════════
 st.set_page_config(
     page_title="产嗅藻荧光指纹预警 — 水源嗅味监测平台",
     layout="wide",
     page_icon="💧",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  LOGIN GATE
+# ══════════════════════════════════════════════════════════════════════════════
+if not check_password():
+    st.stop()
 
 st.markdown("""
 <style>
